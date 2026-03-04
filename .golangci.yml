@@ -9,20 +9,18 @@ linters:
       lines: 150
       statements: 80
 
-  disable:
-    - all
+  default: none
 
   enable:
     - asciicheck
     - bodyclose
-    - deadcode
     - depguard
     - dogsled
     - dupl
     - durationcheck
     - errorlint
     - exhaustive
-    - exportloopref
+    - copyloopvar
     - funlen
     - gocognit
     - goconst
@@ -34,9 +32,7 @@ linters:
     - gomodguard
     - goprintffuncname
     - gosec
-    - gosimple
     - govet
-    - ifshort
     - importas
     - ineffassign
     - lll
@@ -52,15 +48,12 @@ linters:
     - rowserrcheck
     - sqlclosecheck
     - staticcheck
-    - structcheck
-    - stylecheck
     - tagliatelle
     - thelper
     - tparallel
     - unconvert
     - unparam
     - unused
-    - varcheck
     - wastedassign
     - whitespace
 
