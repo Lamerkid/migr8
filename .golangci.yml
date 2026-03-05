@@ -8,6 +8,16 @@ linters:
     funlen:
       lines: 150
       statements: 80
+    godox:
+      keywords:
+        - TODO
+        - BUG
+        - FIXME
+    depguard:
+      rules:
+        main:
+          allow:
+            - github.com/Lamerkid/migr8
 
   default: none
 
@@ -56,6 +66,7 @@ linters:
     - unused
     - wastedassign
     - whitespace
+    - godox
 
 formatters:
   enable:
