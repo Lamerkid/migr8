@@ -17,7 +17,14 @@ linters:
       rules:
         main:
           allow:
+            - $gostd
             - github.com/Lamerkid/migr8
+            - github.com/jackc/pgx/v5/stdlib
+        test:
+          allow:
+            - $gostd
+            - github.com/Lamerkid/migr8
+            - github.com/jackc/pgx/v5/stdlib
 
   default: none
 
