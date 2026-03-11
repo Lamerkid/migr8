@@ -1,0 +1,12 @@
+{
+  "logger": {
+    "level": "DEBUG"
+  },
+  "database": {
+    "dsn": "postgres://admin:admin@postgres:5432/test?sslmode=disable"
+  },
+  "migration": {
+    "dir": "./migrations",
+    "type": "sql"
+  }
+}
