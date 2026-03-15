@@ -1,6 +1,8 @@
 version: "2"
 
 run:
+  build-tags:
+    - integration
   tests: true
 
 linters:
@@ -20,11 +22,17 @@ linters:
             - $gostd
             - github.com/Lamerkid/migr8
             - github.com/jackc/pgx/v5/stdlib
+            - github.com/DATA-DOG/go-sqlmock
+            - github.com/stretchr/testify/require
+            - github.com/stretchr/testify/assert
         test:
           allow:
             - $gostd
             - github.com/Lamerkid/migr8
             - github.com/jackc/pgx/v5/stdlib
+            - github.com/DATA-DOG/go-sqlmock
+            - github.com/stretchr/testify/require
+            - github.com/stretchr/testify/assert
 
   default: none
 
