@@ -24,7 +24,7 @@ func TestIntegration(t *testing.T) {
 
 	waitForPostgres(ctx, t, dsn)
 
-	cmd := exec.CommandContext(ctx, "go", "build", "-o", "../../bin", "../../cmd/migr8")
+	cmd := exec.CommandContext(ctx, "go", "build", "-o", "../../bin/", "../../cmd/migr8")
 	if err := cmd.Run(); err != nil {
 		t.Fatalf("failed to build binary: %v", err)
 	}
@@ -49,7 +49,7 @@ func TestIntegration(t *testing.T) {
 func waitForPostgres(ctx context.Context, t *testing.T, dsn string) {
 	t.Helper()
 
-	maxRetries := 30
+	maxRetries := 10
 	for i := range maxRetries {
 		db, err := sql.Open("pgx", dsn)
 		if err != nil {
@@ -59,7 +59,6 @@ func waitForPostgres(ctx context.Context, t *testing.T, dsn string) {
 
 		err = db.PingContext(ctx)
 		_ = db.Close()
-		fmt.Println(err)
 
 		if err == nil {
 			fmt.Println("PostgreSQL is ready")
@@ -70,5 +69,5 @@ func waitForPostgres(ctx context.Context, t *testing.T, dsn string) {
 		time.Sleep(time.Second)
 	}
 
-	t.Fatal("PostgreSQL not ready after 30 seconds")
+	t.Fatal("PostgreSQL not ready after 10 seconds")
 }
