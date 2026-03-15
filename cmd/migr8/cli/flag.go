@@ -22,7 +22,7 @@ func RegisterFlags(app *App) {
 	})
 
 	app.addFlag(&flag{
-		Name:        "-path",
+		Name:        "-dir",
 		Description: "Path to migration files",
 	})
 }

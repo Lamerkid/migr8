@@ -51,9 +51,9 @@ func RegisterCommands(app *App) {
 			timeStamp := time.Now().Format("20060102150405")
 			fileName := fmt.Sprintf("%s_%s.sql", timeStamp, args[0])
 
-			fullPath := filepath.Join(cfg.Migration.Path, fileName)
+			fullPath := filepath.Join(cfg.Migration.Dir, fileName)
 
-			if err := os.WriteFile(fullPath, []byte("-- +mig8:up\n\n-- +migr8:down\n"), 0o600); err != nil {
+			if err := os.WriteFile(fullPath, []byte("-- +migr8:up\n\n-- +migr8:down\n"), 0o600); err != nil {
 				return err
 			}
 

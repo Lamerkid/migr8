@@ -12,7 +12,6 @@ type Logger interface {
 
 // Database interface implements database functions.
 type Database interface {
-	Connect(ctx context.Context, dsn string) error
 	Close() error
 	CreateServiceTables(ctx context.Context) error
 }

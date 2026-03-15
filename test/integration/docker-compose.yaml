@@ -7,27 +7,21 @@ services:
     environment:
       POSTGRES_USER: migration_user
       POSTGRES_PASSWORD: migrate
-      POSTGRES_DB: migr8
+      POSTGRES_DB: migr8_test
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U migration_user"]
       interval: 5s
       timeout: 5s
       retries: 3
-    volumes:
-      - postgres_data:/var/lib/postgresql
 
-  migr8:
+  test:
     depends_on:
       postgres:
         condition: service_healthy
-    container_name: "migr8"
+    container_name: "migr8-integration-test"
     build:
-      context: ..
-      dockerfile: build/package/Dockerfile
+      context: ../..
+      dockerfile: test/integration/Dockerfile
     environment:
       M8_DSN: postgres://migration_user:migrate@postgres:5432/migr8?sslmode=disable
-      M8_DIR: ./migrations
-    command: ["up"]
-
-volumes:
-  postgres_data:
+      M8_DIR: ./

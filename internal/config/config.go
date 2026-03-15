@@ -25,7 +25,7 @@ type databaseConf struct {
 
 type migrationConf struct {
 	Type string `json:"type"`
-	Path string `json:"path"`
+	Dir  string `json:"dir"`
 }
 
 // BuildFromFlags creates a config from parsed CLI flags.
@@ -42,12 +42,12 @@ func BuildFromFlags(flags map[string]string) (*Config, error) {
 	}
 
 	// Override with CLI flags.
-	if dbURL, ok := flags["-dsn"]; ok && dbURL != "" {
-		config.Database.DSN = dbURL
+	if dsn, ok := flags["-dsn"]; ok && dsn != "" {
+		config.Database.DSN = dsn
 	}
 
-	if path, ok := flags["-path"]; ok && path != "" {
-		config.Migration.Path = path
+	if dir, ok := flags["-dir"]; ok && dir != "" {
+		config.Migration.Dir = dir
 	}
 
 	return config, nil
@@ -63,7 +63,7 @@ func defaultConfig() *Config {
 		},
 		Migration: &migrationConf{
 			Type: "sql",
-			Path: os.Getenv("M8_MIG_DIR"),
+			Dir:  os.Getenv("M8_DIR"),
 		},
 	}
 }
@@ -90,8 +90,8 @@ func mergeConfig(base, override *Config) *Config {
 	if override.Database.DSN != "" {
 		base.Database.DSN = override.Database.DSN
 	}
-	if override.Migration.Path != "" {
-		base.Migration.Path = override.Migration.Path
+	if override.Migration.Dir != "" {
+		base.Migration.Dir = override.Migration.Dir
 	}
 	if override.Logger.Level != "" {
 		base.Logger.Level = override.Logger.Level

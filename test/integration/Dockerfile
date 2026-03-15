@@ -1,4 +1,4 @@
-FROM golang:1.25
+FROM golang:1.25-alpine3.22
 
 WORKDIR /app
 
@@ -11,4 +11,4 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o ./bin/migr8 ./cmd/migr8
 
 ENV PATH "/app/bin:${PATH}"
 
-ENTRYPOINT [ "migr8" ]
+ENTRYPOINT [ "go", "test", "-v", "-tags=integration", "./test/integration/..."]

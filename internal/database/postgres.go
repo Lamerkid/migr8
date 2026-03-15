@@ -12,7 +12,7 @@ import (
 
 // Database is the main database.
 type Database struct {
-	db *sql.DB
+	DB *sql.DB
 }
 
 // NewDatabase returns new instance of the database.
@@ -22,17 +22,17 @@ func NewDatabase() *Database {
 
 // Connect to postgres database.
 func (d *Database) Connect(ctx context.Context, dsn string) (err error) {
-	d.db, err = sql.Open("pgx", dsn)
+	d.DB, err = sql.Open("pgx", dsn)
 	if err != nil {
 		return err
 	}
 
-	return d.db.PingContext(ctx)
+	return d.DB.PingContext(ctx)
 }
 
 // Close the connection to the database.
 func (d *Database) Close() error {
-	return d.db.Close()
+	return d.DB.Close()
 }
 
 // CreateServiceTables for migrations.
@@ -52,12 +52,12 @@ func (d *Database) CreateServiceTables(ctx context.Context) error {
 		UNIQUE(id)
 	)`
 
-	_, err := d.db.ExecContext(ctx, logTable)
+	_, err := d.DB.ExecContext(ctx, logTable)
 	if err != nil {
 		return fmt.Errorf("error creating migration log table: %w", err)
 	}
 
-	_, err = d.db.ExecContext(ctx, lockTable)
+	_, err = d.DB.ExecContext(ctx, lockTable)
 	if err != nil {
 		return fmt.Errorf("error creating migration lock table: %w", err)
 	}
