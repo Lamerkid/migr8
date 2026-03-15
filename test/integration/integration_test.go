@@ -20,14 +20,7 @@ import (
 func TestIntegration(t *testing.T) {
 	ctx := context.Background()
 
-	// Set environment variables.
-	_ = os.Setenv("TEST_USER", "migration_user")
-	_ = os.Setenv("TEST_PASSWORD", "migrate")
-	pgUser := os.Getenv("TEST_USER")
-	pgPassword := os.Getenv("TEST_PASSWORD")
-
-	dsn := "postgres://" + pgUser + ":" + pgPassword + "@localhost:5432/migr8_test?sslmode=disable"
-	_ = os.Setenv("M8_DSN", dsn)
+	dsn := os.Getenv("M8_DSN")
 
 	waitForPostgres(ctx, t, dsn)
 

@@ -5,8 +5,8 @@ services:
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_USER: migration_user
-      POSTGRES_PASSWORD: migrate
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
       POSTGRES_DB: migr8_test
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U migration_user"]
