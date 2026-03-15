@@ -14,7 +14,7 @@ integration-tests:
 	@echo "Starting postgres..."
 	@docker-compose -f test/integration/docker-compose.yaml up -d --build postgres
 	@echo "Running integration tests..."
-	@docker-compose -f test/integration/docker-compose.yaml up --build --abort-on-container-exit test
+	@go test -v -tags=integration ./test/integration/...
 	@docker-compose -f test/integration/docker-compose.yaml down -v --remove-orphans
 
 .PHONY: build test lint integration-tests

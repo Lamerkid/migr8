@@ -13,15 +13,3 @@ services:
       interval: 5s
       timeout: 5s
       retries: 3
-
-  test:
-    depends_on:
-      postgres:
-        condition: service_healthy
-    container_name: "migr8-integration-test"
-    build:
-      context: ../..
-      dockerfile: test/integration/Dockerfile
-    environment:
-      M8_DSN: postgres://migration_user:migrate@postgres:5432/migr8?sslmode=disable
-      M8_DIR: ./
