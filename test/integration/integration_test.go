@@ -59,6 +59,7 @@ func waitForPostgres(ctx context.Context, t *testing.T, dsn string) {
 
 		err = db.PingContext(ctx)
 		_ = db.Close()
+		fmt.Println(err)
 
 		if err == nil {
 			fmt.Println("PostgreSQL is ready")
