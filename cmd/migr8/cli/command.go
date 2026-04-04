@@ -9,9 +9,6 @@ import (
 	"time"
 
 	"github.com/Lamerkid/migr8/internal/config"
-	postgres "github.com/Lamerkid/migr8/internal/database"
-	"github.com/Lamerkid/migr8/internal/logger"
-	"github.com/Lamerkid/migr8/internal/migrator"
 )
 
 type command struct {
@@ -48,12 +45,34 @@ func RegisterCommands(app *App) {
 				return err
 			}
 
+			migType := "sql"
+			if len(args) > 1 && args[1] == "go" {
+				migType = "go"
+			}
+
 			timeStamp := time.Now().Format("20060102150405")
-			fileName := fmt.Sprintf("%s_%s.sql", timeStamp, args[0])
+			fileName := fmt.Sprintf("%s_%s", timeStamp, args[0])
+			var content string
+
+			if migType == "sql" {
+				fileName += ".sql"
+				content = exampleSQL
+			}
+			if migType == "go" {
+				fileName += ".go"
+				content = fmt.Sprintf(exampleGo,
+					timeStamp,
+					toCamelCase(args[0]),
+					toCamelCase(args[0]),
+					toCamelCase(args[0]),
+					toCamelCase(args[0]),
+					toCamelCase(args[0]))
+			}
 
 			fullPath := filepath.Join(cfg.Migration.Dir, fileName)
 
-			if err := os.WriteFile(fullPath, []byte("-- +migr8:up\n\n-- +migr8:down\n"), 0o600); err != nil {
+			// #nosec G306
+			if err := os.WriteFile(fullPath, []byte(content), 0o644); err != nil {
 				return err
 			}
 
@@ -66,32 +85,59 @@ func RegisterCommands(app *App) {
 	app.addCommand(&command{
 		Name:        "up",
 		Description: "Apply migrations",
-		Action: func(ctx context.Context, args []string, flags map[string]string) error {
+		Action: func(ctx context.Context, _ []string, flags map[string]string) error {
 			m, err := createMigratorInstance(ctx, flags)
 			if err != nil {
 				return err
 			}
+			defer m.Close()
 
-			_ = args
-			_ = m
-
-			return nil
+			fmt.Printf("Applying migration(s)...\n")
+			return m.Up(ctx)
 		},
 	})
-}
 
-func createMigratorInstance(ctx context.Context, flags map[string]string) (*migrator.Migrator, error) {
-	cfg, err := config.BuildFromFlags(flags)
-	if err != nil {
-		return nil, err
-	}
+	app.addCommand(&command{
+		Name:        "down",
+		Description: "Rollback last migration",
+		Action: func(ctx context.Context, _ []string, flags map[string]string) error {
+			m, err := createMigratorInstance(ctx, flags)
+			if err != nil {
+				return err
+			}
+			defer m.Close()
 
-	logger := logger.NewLogger(cfg.Logger.Level)
+			fmt.Printf("Rollback previous migration...\n")
+			return m.Down(ctx)
+		},
+	})
 
-	db := postgres.NewDatabase()
-	if err := db.Connect(ctx, cfg.Database.DSN); err != nil {
-		return nil, err
-	}
+	app.addCommand(&command{
+		Name:        "redo",
+		Description: "Redo last migration",
+		Action: func(ctx context.Context, _ []string, flags map[string]string) error {
+			m, err := createMigratorInstance(ctx, flags)
+			if err != nil {
+				return err
+			}
+			defer m.Close()
 
-	return migrator.NewMigrator(db, logger), nil
+			fmt.Printf("Reapplying previous migration...\n")
+			return m.Redo(ctx)
+		},
+	})
+
+	app.addCommand(&command{
+		Name:        "status",
+		Description: "Migrations status",
+		Action: func(ctx context.Context, _ []string, flags map[string]string) error {
+			m, err := createMigratorInstance(ctx, flags)
+			if err != nil {
+				return err
+			}
+			defer m.Close()
+
+			return m.Status(ctx)
+		},
+	})
 }

@@ -31,7 +31,7 @@ func TestConfig(t *testing.T) {
 	require.Equal(t, "./migrations/test", config.Migration.Dir)
 
 	// Load config from json file.
-	flags["-config"] = "./config.json"
+	flags["-cfg"] = "./config.json"
 	config2, err := BuildFromFlags(flags)
 	if err != nil {
 		t.Fatalf("failed to build config: %v", err)

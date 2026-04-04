@@ -57,7 +57,11 @@ func (a *App) ShowHelp() error {
 
 	fmt.Fprintln(w, "COMMANDS:")
 	for _, command := range a.commands {
-		fmt.Fprintf(w, "  %s\t%s\n", command.Name, command.Description)
+		if command.Name == "create" {
+			fmt.Fprintf(w, "  %s NAME [sql|go]\t%s\n", command.Name, command.Description)
+		} else {
+			fmt.Fprintf(w, "  %s\t%s\n", command.Name, command.Description)
+		}
 	}
 
 	return w.Flush()

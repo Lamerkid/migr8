@@ -12,7 +12,7 @@ func (a *App) addFlag(flag *flag) {
 // RegisterFlags adds flags to the CLI app.
 func RegisterFlags(app *App) {
 	app.addFlag(&flag{
-		Name:        "-config",
+		Name:        "-cfg",
 		Description: "Select config file for migr8",
 	})
 

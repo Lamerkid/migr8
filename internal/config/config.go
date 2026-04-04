@@ -33,7 +33,7 @@ func BuildFromFlags(flags map[string]string) (*Config, error) {
 	config := defaultConfig()
 
 	// Override with config file first.
-	if configFile, ok := flags["-config"]; ok && configFile != "" {
+	if configFile, ok := flags["-cfg"]; ok && configFile != "" {
 		fileConfig, err := loadFromFile(configFile)
 		if err != nil {
 			return nil, fmt.Errorf("failed to load config file: %w", err)
