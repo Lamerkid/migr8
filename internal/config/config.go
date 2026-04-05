@@ -77,21 +77,22 @@ func defaultConfig() *Config {
 }
 
 func loadFromFile(path string) (*Config, error) {
-	var config *Config
 	cleanedPath := filepath.Clean(path)
 
-	confFile, err := os.Open(cleanedPath)
+	data, err := os.ReadFile(cleanedPath)
 	if err != nil {
-		return &Config{}, err
-	}
-	defer confFile.Close()
-
-	decoder := json.NewDecoder(confFile)
-	if err = decoder.Decode(&config); err != nil {
-		return &Config{}, err
+		return nil, fmt.Errorf("failed to read config file: %w", err)
 	}
 
-	return config, nil
+	// Expand environment variables.
+	expanded := os.ExpandEnv(string(data))
+
+	var cfg Config
+	if err := json.Unmarshal([]byte(expanded), &cfg); err != nil {
+		return nil, fmt.Errorf("failed to parse config: %w", err)
+	}
+
+	return &cfg, nil
 }
 
 func mergeConfig(base, override *Config) *Config {

@@ -10,12 +10,12 @@ import (
 func TestConfig(t *testing.T) {
 	flags := make(map[string]string)
 
-	err := os.Setenv("M8_DIR", "./migrations/test")
+	err := os.Setenv("M8_DSN", "postgres://env")
 	if err != nil {
 		t.Fatalf("failed to set environment variables: %v", err)
 	}
 
-	err = os.Setenv("M8_DSN", "postgres://env")
+	err = os.Setenv("M8_DIR", "./migrations/test")
 	if err != nil {
 		t.Fatalf("failed to set environment variables: %v", err)
 	}
@@ -37,5 +37,7 @@ func TestConfig(t *testing.T) {
 		t.Fatalf("failed to build config: %v", err)
 	}
 
+	require.Equal(t, "postgres://test", config.Database.DSN)
+	require.Equal(t, "./migrations/test", config.Migration.Dir)
 	require.NotNil(t, config2)
 }
