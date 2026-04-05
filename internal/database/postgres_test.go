@@ -16,7 +16,7 @@ func TestCreateServiceTables(t *testing.T) {
 		t.Fatalf("failed to create mock: %v", err)
 	}
 
-	database := &Database{DB: db}
+	database := &Database{db: db}
 	defer database.Close()
 
 	// Set expectations.

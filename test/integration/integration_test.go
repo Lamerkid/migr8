@@ -47,8 +47,6 @@ func TestIntegration(t *testing.T) {
 	t.Run("concurrent redo operations", func(t *testing.T) {
 		testConcurrentRedo(t)
 	})
-
-	require.NotEmpty(t, dsn)
 }
 
 func testCreateMigration(t *testing.T) {
@@ -117,6 +115,7 @@ func testConcurrentUpAndDown(t *testing.T) {
 	for i := range 5 {
 		wg.Go(func() {
 			cmd := exec.CommandContext(ctx, binaryPath, "up")
+
 			output, err := cmd.CombinedOutput()
 			if err != nil {
 				errChan <- fmt.Errorf("up-%d failed: %w\n%s", i, err, output)

@@ -45,20 +45,15 @@ func RegisterCommands(app *App) {
 				return err
 			}
 
-			migType := "sql"
-			if len(args) > 1 && args[1] == "go" {
-				migType = "go"
-			}
-
 			timeStamp := time.Now().Format("20060102150405")
 			fileName := fmt.Sprintf("%s_%s", timeStamp, args[0])
 			var content string
 
-			if migType == "sql" {
+			if cfg.Migration.Type == "sql" {
 				fileName += ".sql"
 				content = exampleSQL
 			}
-			if migType == "go" {
+			if cfg.Migration.Type == "go" {
 				fileName += ".go"
 				content = fmt.Sprintf(exampleGo,
 					timeStamp,
@@ -86,7 +81,7 @@ func RegisterCommands(app *App) {
 		Name:        "up",
 		Description: "Apply migrations",
 		Action: func(ctx context.Context, _ []string, flags map[string]string) error {
-			m, err := createMigratorInstance(ctx, flags)
+			m, err := createMigratorInstance(flags)
 			if err != nil {
 				return err
 			}
@@ -101,7 +96,7 @@ func RegisterCommands(app *App) {
 		Name:        "down",
 		Description: "Rollback last migration",
 		Action: func(ctx context.Context, _ []string, flags map[string]string) error {
-			m, err := createMigratorInstance(ctx, flags)
+			m, err := createMigratorInstance(flags)
 			if err != nil {
 				return err
 			}
@@ -116,7 +111,7 @@ func RegisterCommands(app *App) {
 		Name:        "redo",
 		Description: "Redo last migration",
 		Action: func(ctx context.Context, _ []string, flags map[string]string) error {
-			m, err := createMigratorInstance(ctx, flags)
+			m, err := createMigratorInstance(flags)
 			if err != nil {
 				return err
 			}
@@ -131,13 +126,27 @@ func RegisterCommands(app *App) {
 		Name:        "status",
 		Description: "Migrations status",
 		Action: func(ctx context.Context, _ []string, flags map[string]string) error {
-			m, err := createMigratorInstance(ctx, flags)
+			m, err := createMigratorInstance(flags)
 			if err != nil {
 				return err
 			}
 			defer m.Close()
 
 			return m.Status(ctx)
+		},
+	})
+
+	app.addCommand(&command{
+		Name:        "dbversion",
+		Description: "Database version (last applied migration)",
+		Action: func(ctx context.Context, _ []string, flags map[string]string) error {
+			m, err := createMigratorInstance(flags)
+			if err != nil {
+				return err
+			}
+			defer m.Close()
+
+			return m.DBversion(ctx)
 		},
 	})
 }

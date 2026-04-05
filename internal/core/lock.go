@@ -1,4 +1,4 @@
-package migrator
+package core
 
 import (
 	"context"
@@ -7,20 +7,20 @@ import (
 
 // AdvisoryLock using PostgreSQL advisory locks.
 type AdvisoryLock struct {
-	db Database
+	DB Database
 }
 
 // Acquire lock with hardcoded ID.
 func (alm *AdvisoryLock) Acquire(ctx context.Context, lockID int64) (bool, error) {
 	var acquired bool
-	err := alm.db.QueryRowContext(ctx, "SELECT pg_try_advisory_lock($1)", lockID).Scan(&acquired)
+	err := alm.DB.QueryRowContext(ctx, "SELECT pg_try_advisory_lock($1)", lockID).Scan(&acquired)
 	return acquired, err
 }
 
 // Release lock with hardcoded ID.
 func (alm *AdvisoryLock) Release(ctx context.Context, lockID int64) error {
 	var released bool
-	err := alm.db.QueryRowContext(ctx, "SELECT pg_advisory_unlock($1)", lockID).Scan(&released)
+	err := alm.DB.QueryRowContext(ctx, "SELECT pg_advisory_unlock($1)", lockID).Scan(&released)
 	if err != nil {
 		return err
 	}

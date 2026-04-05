@@ -42,12 +42,20 @@ func BuildFromFlags(flags map[string]string) (*Config, error) {
 	}
 
 	// Override with CLI flags.
+	if log, ok := flags["-log"]; ok && log != "" {
+		config.Migration.Type = log
+	}
+
 	if dsn, ok := flags["-dsn"]; ok && dsn != "" {
 		config.Database.DSN = dsn
 	}
 
 	if dir, ok := flags["-dir"]; ok && dir != "" {
 		config.Migration.Dir = dir
+	}
+
+	if typ, ok := flags["-type"]; ok && typ != "" {
+		config.Migration.Type = typ
 	}
 
 	return config, nil
@@ -62,8 +70,8 @@ func defaultConfig() *Config {
 			DSN: os.Getenv("M8_DSN"),
 		},
 		Migration: &migrationConf{
-			Type: "sql",
 			Dir:  os.Getenv("M8_DIR"),
+			Type: "sql",
 		},
 	}
 }
@@ -87,14 +95,17 @@ func loadFromFile(path string) (*Config, error) {
 }
 
 func mergeConfig(base, override *Config) *Config {
+	if override.Logger.Level != "" {
+		base.Logger.Level = override.Logger.Level
+	}
 	if override.Database.DSN != "" {
 		base.Database.DSN = override.Database.DSN
 	}
 	if override.Migration.Dir != "" {
 		base.Migration.Dir = override.Migration.Dir
 	}
-	if override.Logger.Level != "" {
-		base.Logger.Level = override.Logger.Level
+	if override.Migration.Type != "" {
+		base.Migration.Type = override.Migration.Type
 	}
 	return base
 }

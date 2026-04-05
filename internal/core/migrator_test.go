@@ -1,4 +1,4 @@
-package migrator
+package core
 
 import (
 	"context"
@@ -7,8 +7,6 @@ import (
 	"time"
 
 	"github.com/DATA-DOG/go-sqlmock"
-	postgres "github.com/Lamerkid/migr8/internal/database"
-	"github.com/Lamerkid/migr8/internal/logger"
 	"github.com/stretchr/testify/require"
 )
 
@@ -19,13 +17,9 @@ func TestMigrator(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to create mock: %v", err)
 	}
+	defer db.Close()
 
-	database := &postgres.Database{DB: db}
-	defer database.Close()
-
-	logger := logger.NewLogger("DEBUG")
-
-	m := NewMigrator(database, logger, ".")
+	m := NewMigrator(db, ".")
 
 	// Set expectations.
 	lockExpectations(t, mock)
@@ -74,10 +68,7 @@ func TestMigratorConcurrently(t *testing.T) {
 	}
 	defer db.Close()
 
-	database := &postgres.Database{DB: db}
-	logger := logger.NewLogger("DEBUG")
-
-	m := NewMigrator(database, logger, ".")
+	m := NewMigrator(db, ".")
 
 	lockExpectations(t, mock)
 	upExpectations(t, mock)
@@ -123,10 +114,7 @@ func TestMigratorConcurrentDifferentCommands(t *testing.T) {
 	}
 	defer db.Close()
 
-	database := &postgres.Database{DB: db}
-	logger := logger.NewLogger("DEBUG")
-
-	m := NewMigrator(database, logger, ".")
+	m := NewMigrator(db, ".")
 
 	lockExpectations(t, mock)
 	upExpectations(t, mock)

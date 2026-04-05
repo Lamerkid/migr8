@@ -1,4 +1,4 @@
-package migrator
+package core
 
 import (
 	"fmt"
@@ -10,7 +10,7 @@ import (
 
 // MigrationSource reads migrations from the file.
 type MigrationSource struct {
-	logger Logger
+	Logger Logger
 	Path   string
 }
 
@@ -25,7 +25,7 @@ func (s *MigrationSource) LoadMigrations() ([]*Migration, error) {
 
 	for _, file := range files {
 		if file.IsDir() {
-			s.logger.Error("%s is a directory", file.Name())
+			s.Logger.Error("%s is a directory", file.Name())
 			continue
 		}
 
@@ -33,13 +33,13 @@ func (s *MigrationSource) LoadMigrations() ([]*Migration, error) {
 
 		version, err := s.parseVersion(file.Name())
 		if err != nil {
-			s.logger.Error("error parsing version for %s", file.Name())
+			s.Logger.Error("error parsing version for %s", file.Name())
 			continue
 		}
 
 		switch ext {
 		case ".sql":
-			s.logger.Debug("parsing sql file %s", file.Name())
+			s.Logger.Debug("parsing sql file %s", file.Name())
 
 			content, err := os.ReadFile(filepath.Join(s.Path, file.Name()))
 			if err != nil {
@@ -57,7 +57,7 @@ func (s *MigrationSource) LoadMigrations() ([]*Migration, error) {
 			})
 
 		case ".go":
-			s.logger.Debug("parsing go file %s", file.Name())
+			s.Logger.Debug("parsing go file %s", file.Name())
 
 			mig, exists := GetRegisteredMigration(version)
 			if !exists {
@@ -86,7 +86,7 @@ func (s *MigrationSource) LoadMigrations() ([]*Migration, error) {
 func (s *MigrationSource) splitMigrationSQL(content string) (up, down string) {
 	parts := strings.Split(content, "-- +migr8:down")
 	if len(parts) != 2 {
-		s.logger.Debug("file has no down sql section")
+		s.Logger.Debug("file has no down sql section")
 		return strings.TrimSpace(content), ""
 	}
 

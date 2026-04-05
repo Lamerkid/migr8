@@ -22,7 +22,4 @@ integration-tests:
 build:
 	go build -ldflags=$(LDFLAGS) -v -o $(BIN) ./cmd/migr8
 
-up:
-	docker-compose -f deployments/docker-compose.yaml up --build
-
 .PHONY: lint test integration-tests build up

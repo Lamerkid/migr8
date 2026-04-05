@@ -1,36 +1,37 @@
 package cli
 
 import (
-	"context"
+	"database/sql"
 	"strings"
 
 	"github.com/Lamerkid/migr8/internal/config"
-	postgres "github.com/Lamerkid/migr8/internal/database"
-	"github.com/Lamerkid/migr8/internal/logger"
-	"github.com/Lamerkid/migr8/internal/migrator"
+	migr8 "github.com/Lamerkid/migr8/pkg"
+	_ "github.com/jackc/pgx/v5/stdlib" // Pgx driver for Postgres.
 )
 
 var exampleSQL = `-- +migr8:up
-CREATE TABLE IF EXISTS example (
+
+CREATE TABLE IF NOT EXISTS example (
 	id SERIAL PRIMARY KEY
 );
 
 -- +migr8:down
+
 DROP TABLE IF EXISTS example;
 `
 
-var exampleGo = `// Package migrations provides usage of go migrations to database.
-package migrations
+var exampleGo = `// Package migration provides applying go migrations to database.
+package migration
 
 import (
 	"context"
 	"database/sql"
 
-	"github.com/Lamerkid/migr8/internal/migrator"
+	migr8 "github.com/Lamerkid/migr8/pkg"
 )
 
 func init() {
-	migrator.RegisterMigration(%s, &%s{})
+	migr8.RegisterMigration(%s, &%s{})
 }
 
 // %s struct represent up and down command for single file.
@@ -49,20 +50,18 @@ func (m *%s) Down(ctx context.Context, tx *sql.Tx) error {
 }
 `
 
-func createMigratorInstance(ctx context.Context, flags map[string]string) (*migrator.Migrator, error) {
+func createMigratorInstance(flags map[string]string) (*migr8.Migrator, error) {
 	cfg, err := config.BuildFromFlags(flags)
 	if err != nil {
 		return nil, err
 	}
 
-	logger := logger.NewLogger(cfg.Logger.Level)
-
-	db := postgres.NewDatabase()
-	if err := db.Connect(ctx, cfg.Database.DSN); err != nil {
+	db, err := sql.Open("pgx", cfg.Database.DSN)
+	if err != nil {
 		return nil, err
 	}
 
-	return migrator.NewMigrator(db, logger, cfg.Migration.Dir), nil
+	return migr8.New(db, cfg.Migration.Dir), nil
 }
 
 func toCamelCase(s string) string {

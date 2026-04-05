@@ -1,10 +1,14 @@
-// Package migrator provides logic for migrator app.
-package migrator
+// Package core provides core logic for migrator.
+package core
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"sync"
+
+	postgres "github.com/Lamerkid/migr8/internal/database"
+	"github.com/Lamerkid/migr8/internal/logger"
 )
 
 // Migrator is the main migrator.
@@ -16,14 +20,52 @@ type Migrator struct {
 	mu           sync.Mutex
 }
 
-// NewMigrator returns new instance of the migrator.
-func NewMigrator(db Database, logger Logger, migrationPath string) *Migrator {
-	return &Migrator{
-		source:       &MigrationSource{logger: logger, Path: migrationPath},
-		db:           db,
-		logger:       logger,
-		advisoryLock: AdvisoryLock{db: db},
+// Option pattern for flexible configuration.
+type Option func(*Migrator)
+
+// WithLogger allows to pass custom logger to migrator.
+func WithLogger(logg Logger) Option {
+	return func(m *Migrator) {
+		m.logger = logg
+		m.source.Logger = logg
 	}
+}
+
+// NewMigrator returns new instance of the migrator.
+func NewMigrator(db *sql.DB, migrationPath string, opts ...Option) *Migrator {
+	defaultDB := postgres.NewDatabase(db)
+	defaultLogger := logger.NewLogger("INFO")
+
+	m := &Migrator{
+		source:       &MigrationSource{Logger: defaultLogger, Path: migrationPath},
+		db:           defaultDB,
+		logger:       defaultLogger,
+		advisoryLock: AdvisoryLock{DB: defaultDB},
+	}
+
+	for _, opt := range opts {
+		opt(m)
+	}
+
+	return m
+}
+
+// NewMigratorWithDB creates a migrator with custom Database implementation.
+func NewMigratorWithDB(db Database, migrationsDir string, opts ...Option) *Migrator {
+	defaultLogger := logger.NewLogger("INFO")
+
+	m := &Migrator{
+		source:       &MigrationSource{Logger: defaultLogger, Path: migrationsDir},
+		db:           db,
+		logger:       defaultLogger,
+		advisoryLock: AdvisoryLock{DB: db},
+	}
+
+	for _, opt := range opts {
+		opt(m)
+	}
+
+	return m
 }
 
 // Close closes database connection.
@@ -199,6 +241,33 @@ func (m *Migrator) Status(ctx context.Context) error {
 		len(migrations),
 		len(applied),
 		len(migrations)-len(applied))
+
+	return nil
+}
+
+// DBversion shows current migration state.
+func (m *Migrator) DBversion(ctx context.Context) error {
+	if err := m.ensureTables(ctx); err != nil {
+		return fmt.Errorf("failed to ensure migration table: %w", err)
+	}
+
+	m.logger.Info("checking for latest applied version")
+	version, err := m.db.GetLatestVersion(ctx)
+	if err != nil {
+		return err
+	}
+	if version == 0 {
+		return nil
+	}
+
+	m.logger.Info("loading latests migration")
+	mig, err := m.loadMigration(version)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("\nDatabase version:")
+	fmt.Printf("%d - applied migration: %s\n", mig.Version, mig.Name)
 
 	return nil
 }
