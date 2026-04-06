@@ -167,7 +167,7 @@ To use Go migrations you need:
 
 1. Move **main.go** into your `cmd/` directory
 
-2. Import migrations directory from your custom [cmd/main.go](migr8/cmd/main.go):
+2. Import migrations directory from your custom [cmd/main.go](cmd/migr8/main.go):
 
    ```go
    import (
