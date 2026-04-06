@@ -8,6 +8,17 @@ import (
 	"github.com/Lamerkid/migr8/internal/core"
 )
 
+// GoMigration is the interface that Go migrations must implement.
+type GoMigration interface {
+	Up(ctx context.Context, tx *sql.Tx) error
+	Down(ctx context.Context, tx *sql.Tx) error
+}
+
+// RegisterMigration registers a Go migration with the migrator.
+func RegisterMigration(version int64, m GoMigration) {
+	core.RegisterMigration(version, m)
+}
+
 // Migrator is the public API.
 type Migrator struct {
 	core *core.Migrator

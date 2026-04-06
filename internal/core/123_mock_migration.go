@@ -14,7 +14,8 @@ type MockGoMigration struct{}
 
 // Up command lets apply migrations.
 func (m *MockGoMigration) Up(ctx context.Context, tx *sql.Tx) error {
-	if _, err := tx.ExecContext(ctx, `CREATE TABLE IF NOT EXISTS test (id UUID PRIMARY KEY);`); err != nil {
+	query := `CREATE TABLE IF NOT EXISTS test (id UUID PRIMARY KEY)`
+	if _, err := tx.ExecContext(ctx, query); err != nil {
 		return err
 	}
 	return nil
@@ -22,7 +23,8 @@ func (m *MockGoMigration) Up(ctx context.Context, tx *sql.Tx) error {
 
 // Down command lets rollback migration.
 func (m *MockGoMigration) Down(ctx context.Context, tx *sql.Tx) error {
-	if _, err := tx.ExecContext(ctx, `DROP TABLE IF EXISTS test`); err != nil {
+	query := `DROP TABLE IF EXISTS test`
+	if _, err := tx.ExecContext(ctx, query); err != nil {
 		return err
 	}
 	return nil

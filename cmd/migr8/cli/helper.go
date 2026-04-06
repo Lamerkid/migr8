@@ -39,13 +39,13 @@ type %s struct{}
 
 // Up command lets apply migrations.
 func (m *%s) Up(ctx context.Context, tx *sql.Tx) error {
-	// Write your up migration here
+	// Write your up migration here.
 	return nil
 }
 
 // Down command lets rollback migration.
 func (m *%s) Down(ctx context.Context, tx *sql.Tx) error {
-	// Write your down migration here
+	// Write your down migration here.
 	return nil
 }
 `

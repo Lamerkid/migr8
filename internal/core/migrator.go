@@ -94,13 +94,13 @@ func (m *Migrator) Up(ctx context.Context) error {
 		return fmt.Errorf("failed to ensure migration table: %w", err)
 	}
 
-	m.logger.Info("loading migrations")
+	m.logger.Debug("loading migrations")
 	migrations, err := m.source.LoadMigrations()
 	if err != nil {
 		return fmt.Errorf("failed to load migrations: %w", err)
 	}
 
-	m.logger.Info("checking for applied versions")
+	m.logger.Debug("checking for applied versions")
 	applied, err := m.db.GetAppliedVersions(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to get applied migrations: %w", err)
@@ -127,6 +127,8 @@ func (m *Migrator) Up(ctx context.Context) error {
 		}
 	}
 
+	m.logger.Info("applyed successfully")
+
 	return nil
 }
 
@@ -148,7 +150,7 @@ func (m *Migrator) Down(ctx context.Context) error {
 		return fmt.Errorf("failed to ensure migration table: %w", err)
 	}
 
-	m.logger.Info("checking for latest applied version")
+	m.logger.Debug("checking for latest applied version")
 	version, err := m.db.GetLatestVersion(ctx)
 	if err != nil {
 		return err
@@ -157,14 +159,21 @@ func (m *Migrator) Down(ctx context.Context) error {
 		return nil
 	}
 
-	m.logger.Info("loading latests migration")
+	m.logger.Debug("loading latests migration")
 	mig, err := m.loadMigration(version)
 	if err != nil {
 		return err
 	}
 
-	m.logger.Info("rolling back %d\n", version)
-	return m.applyDown(ctx, mig)
+	m.logger.Debug("rolling back %d\n", version)
+
+	if err := m.applyDown(ctx, mig); err != nil {
+		return fmt.Errorf("failed to roll back migration %d: %w", mig.Version, err)
+	}
+
+	m.logger.Info("successfully rolled back %d", mig.Version)
+
+	return nil
 }
 
 // Redo reapplies the last migration.
@@ -185,7 +194,7 @@ func (m *Migrator) Redo(ctx context.Context) error {
 		return fmt.Errorf("failed to ensure migration table: %w", err)
 	}
 
-	m.logger.Info("checking for latest applied version")
+	m.logger.Debug("checking for latest applied version")
 	version, err := m.db.GetLatestVersion(ctx)
 	if err != nil {
 		return err
@@ -194,19 +203,25 @@ func (m *Migrator) Redo(ctx context.Context) error {
 		return nil
 	}
 
-	m.logger.Info("loading latests migration")
+	m.logger.Debug("loading latests migration")
 	mig, err := m.loadMigration(version)
 	if err != nil {
 		return err
 	}
 
-	m.logger.Info("rolling back %d for redo\n", version)
+	m.logger.Debug("rolling back %d for redo\n", version)
 	if err := m.applyDown(ctx, mig); err != nil {
-		return err
+		return fmt.Errorf("failed to roll back migration %d: %w", mig.Version, err)
 	}
 
-	m.logger.Info("reapplying %d\n", version)
-	return m.applyUp(ctx, mig)
+	m.logger.Debug("reapplying %d\n", version)
+	if err := m.applyUp(ctx, mig); err != nil {
+		return fmt.Errorf("failed to apply migration %d: %w", mig.Version, err)
+	}
+
+	m.logger.Info("successfully reapplied %d", mig.Version)
+
+	return nil
 }
 
 // Status shows current migration state.
@@ -215,13 +230,13 @@ func (m *Migrator) Status(ctx context.Context) error {
 		return fmt.Errorf("failed to ensure migration table: %w", err)
 	}
 
-	m.logger.Info("loading migrations")
+	m.logger.Debug("loading migrations")
 	migrations, err := m.source.LoadMigrations()
 	if err != nil {
 		return err
 	}
 
-	m.logger.Info("checking for applied versions")
+	m.logger.Debug("checking for applied versions")
 	applied, err := m.db.GetAppliedVersions(ctx)
 	if err != nil {
 		return err
@@ -234,7 +249,7 @@ func (m *Migrator) Status(ctx context.Context) error {
 		if applied[mig.Version] {
 			marker = "+"
 		}
-		fmt.Printf("%s %d %s\n", marker, mig.Version, mig.Name)
+		fmt.Printf("%s %d: %s\n", marker, mig.Version, mig.Name)
 	}
 
 	fmt.Printf("\nTotal: %d, Applied: %d, Pending: %d\n",
@@ -251,7 +266,7 @@ func (m *Migrator) DBversion(ctx context.Context) error {
 		return fmt.Errorf("failed to ensure migration table: %w", err)
 	}
 
-	m.logger.Info("checking for latest applied version")
+	m.logger.Debug("checking for latest applied version")
 	version, err := m.db.GetLatestVersion(ctx)
 	if err != nil {
 		return err
@@ -260,7 +275,7 @@ func (m *Migrator) DBversion(ctx context.Context) error {
 		return nil
 	}
 
-	m.logger.Info("loading latests migration")
+	m.logger.Debug("loading latests migration")
 	mig, err := m.loadMigration(version)
 	if err != nil {
 		return err

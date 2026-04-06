@@ -7,6 +7,8 @@ import (
 	"os"
 
 	"github.com/Lamerkid/migr8/cmd/migr8/cli"
+	// Import migrations directory.
+	_ "github.com/Lamerkid/migr8/testmigration"
 )
 
 var version string
