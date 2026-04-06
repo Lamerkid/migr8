@@ -15,29 +15,29 @@ func TestConfig(t *testing.T) {
 		t.Fatalf("failed to set environment variables: %v", err)
 	}
 
-	err = os.Setenv("M8_DIR", "./migrations/test")
+	err = os.Setenv("M8_DIR", "./migrations/env")
 	if err != nil {
 		t.Fatalf("failed to set environment variables: %v", err)
 	}
 
-	// Flag should reassign config for dsn.
-	flags["-dsn"] = "postgres://test"
+	// Load config from json file with expanded env variables.
+	flags["-cfg"] = "./config.json"
 	config, err := BuildFromFlags(flags)
 	if err != nil {
 		t.Fatalf("failed to build config: %v", err)
 	}
 
-	require.Equal(t, "postgres://test", config.Database.DSN)
-	require.Equal(t, "./migrations/test", config.Migration.Dir)
+	require.Equal(t, "postgres://env", config.Database.DSN)
+	require.Equal(t, "./migrations/env", config.Migration.Dir)
 
-	// Load config from json file.
-	flags["-cfg"] = "./config.json"
+	// Flag should reassign config for dsn.
+	flags["-dsn"] = "postgres://test"
+	flags["-dir"] = "./migrations/test"
 	config2, err := BuildFromFlags(flags)
 	if err != nil {
 		t.Fatalf("failed to build config: %v", err)
 	}
 
-	require.Equal(t, "postgres://test", config.Database.DSN)
-	require.Equal(t, "./migrations/test", config.Migration.Dir)
-	require.NotNil(t, config2)
+	require.Equal(t, "postgres://test", config2.Database.DSN)
+	require.Equal(t, "./migrations/test", config2.Migration.Dir)
 }

@@ -34,6 +34,7 @@ func TestMigrator(t *testing.T) {
 	downExpectations(t, mock)
 	unlockExpectations(t, mock)
 
+	dbversionExpectations(t, mock)
 	statusExpectations(t, mock)
 
 	// Begin commands execution.
@@ -47,6 +48,10 @@ func TestMigrator(t *testing.T) {
 
 	if err = m.Down(ctx); err != nil {
 		t.Fatalf("error rollback last migration: %v", err)
+	}
+
+	if err = m.DBversion(ctx); err != nil {
+		t.Fatalf("error checking migration status: %v", err)
 	}
 
 	if err = m.Status(ctx); err != nil {
@@ -245,4 +250,13 @@ func statusExpectations(t *testing.T, mock sqlmock.Sqlmock) {
 		WillReturnResult(sqlmock.NewResult(0, 1))
 	mock.ExpectQuery("SELECT version FROM changelog").
 		WillReturnRows(sqlmock.NewRows([]string{"version"}).AddRow(123))
+}
+
+func dbversionExpectations(t *testing.T, mock sqlmock.Sqlmock) {
+	t.Helper()
+
+	mock.ExpectExec("CREATE TABLE IF NOT EXISTS changelog").
+		WillReturnResult(sqlmock.NewResult(0, 1))
+	mock.ExpectQuery("SELECT COALESCE\\(MAX\\(version\\), 0\\) FROM changelog").
+		WillReturnRows(sqlmock.NewRows([]string{"coalesce"}).AddRow(123))
 }
