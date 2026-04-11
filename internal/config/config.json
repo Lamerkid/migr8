@@ -3,10 +3,10 @@
     "level": "DEBUG"
   },
   "database": {
-    "dsn": "postgres://admin:admin@postgres:5432/test?sslmode=disable"
+    "dsn": "$M8_DSN"
   },
   "migration": {
-    "dir": "./migrations",
+    "dir": "$M8_DIR",
     "type": "sql"
   }
 }

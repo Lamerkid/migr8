@@ -12,8 +12,13 @@ func (a *App) addFlag(flag *flag) {
 // RegisterFlags adds flags to the CLI app.
 func RegisterFlags(app *App) {
 	app.addFlag(&flag{
-		Name:        "-config",
-		Description: "Select config file for migr8",
+		Name:        "-cfg",
+		Description: "JSON config file for migration tool",
+	})
+
+	app.addFlag(&flag{
+		Name:        "-log",
+		Description: "Logger level (debug/info/warn/error)",
 	})
 
 	app.addFlag(&flag{
@@ -23,6 +28,11 @@ func RegisterFlags(app *App) {
 
 	app.addFlag(&flag{
 		Name:        "-dir",
-		Description: "Path to migration files",
+		Description: "Path to directory with migration files",
+	})
+
+	app.addFlag(&flag{
+		Name:        "-type",
+		Description: "Migration type (sql/go)",
 	})
 }

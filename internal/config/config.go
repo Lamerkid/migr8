@@ -33,7 +33,7 @@ func BuildFromFlags(flags map[string]string) (*Config, error) {
 	config := defaultConfig()
 
 	// Override with config file first.
-	if configFile, ok := flags["-config"]; ok && configFile != "" {
+	if configFile, ok := flags["-cfg"]; ok && configFile != "" {
 		fileConfig, err := loadFromFile(configFile)
 		if err != nil {
 			return nil, fmt.Errorf("failed to load config file: %w", err)
@@ -42,12 +42,20 @@ func BuildFromFlags(flags map[string]string) (*Config, error) {
 	}
 
 	// Override with CLI flags.
+	if log, ok := flags["-log"]; ok && log != "" {
+		config.Migration.Type = log
+	}
+
 	if dsn, ok := flags["-dsn"]; ok && dsn != "" {
 		config.Database.DSN = dsn
 	}
 
 	if dir, ok := flags["-dir"]; ok && dir != "" {
 		config.Migration.Dir = dir
+	}
+
+	if typ, ok := flags["-type"]; ok && typ != "" {
+		config.Migration.Type = typ
 	}
 
 	return config, nil
@@ -62,39 +70,43 @@ func defaultConfig() *Config {
 			DSN: os.Getenv("M8_DSN"),
 		},
 		Migration: &migrationConf{
-			Type: "sql",
 			Dir:  os.Getenv("M8_DIR"),
+			Type: "sql",
 		},
 	}
 }
 
 func loadFromFile(path string) (*Config, error) {
-	var config *Config
 	cleanedPath := filepath.Clean(path)
 
-	confFile, err := os.Open(cleanedPath)
+	data, err := os.ReadFile(cleanedPath)
 	if err != nil {
-		return &Config{}, err
-	}
-	defer confFile.Close()
-
-	decoder := json.NewDecoder(confFile)
-	if err = decoder.Decode(&config); err != nil {
-		return &Config{}, err
+		return nil, fmt.Errorf("failed to read config file: %w", err)
 	}
 
-	return config, nil
+	// Expand environment variables.
+	expanded := os.ExpandEnv(string(data))
+
+	var cfg Config
+	if err := json.Unmarshal([]byte(expanded), &cfg); err != nil {
+		return nil, fmt.Errorf("failed to parse config: %w", err)
+	}
+
+	return &cfg, nil
 }
 
 func mergeConfig(base, override *Config) *Config {
+	if override.Logger.Level != "" {
+		base.Logger.Level = override.Logger.Level
+	}
 	if override.Database.DSN != "" {
 		base.Database.DSN = override.Database.DSN
 	}
 	if override.Migration.Dir != "" {
 		base.Migration.Dir = override.Migration.Dir
 	}
-	if override.Logger.Level != "" {
-		base.Logger.Level = override.Logger.Level
+	if override.Migration.Type != "" {
+		base.Migration.Type = override.Migration.Type
 	}
 	return base
 }

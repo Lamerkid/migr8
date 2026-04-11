@@ -18,7 +18,11 @@ func TestParser_SimpleCommand(t *testing.T) {
 
 	app.addCommand(&command{
 		Name: "test",
-		Action: func(_ context.Context, _ []string, _ map[string]string) error {
+		Action: func(_ context.Context, _ []string, flags map[string]string) error {
+			m, err1 := createMigratorInstance(flags)
+			err2 := m.Close()
+			require.NoError(t, err1)
+			require.NoError(t, err2)
 			executed = true
 			return nil
 		},

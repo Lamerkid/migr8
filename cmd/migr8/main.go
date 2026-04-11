@@ -7,6 +7,8 @@ import (
 	"os"
 
 	"github.com/Lamerkid/migr8/cmd/migr8/cli"
+	// Invoke init() functions within migrations pkg.
+	_ "github.com/Lamerkid/migr8/example"
 )
 
 var version string
